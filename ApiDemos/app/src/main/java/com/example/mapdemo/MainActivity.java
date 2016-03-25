@@ -62,8 +62,8 @@ public final class MainActivity extends AppCompatActivity
 
             DemoDetails demo = getItem(position);
 
-            featureView.setTitleId(demo.titleId);
-            featureView.setDescriptionId(demo.descriptionId);
+//            featureView.setTitleId(demo.titleId);
+//            featureView.setDescriptionId(demo.descriptionId);
 
             Resources resources = getContext().getResources();
             String title = resources.getString(demo.titleId);

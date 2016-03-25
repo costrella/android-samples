@@ -14,8 +14,9 @@
      limitations under the License.
 -->
 <resources>
-    <string name="demo_title">Google Maps API Demos</string>
+    <string name="demo_title">Cmentarz 2016</string>
     <string name="legal_info">Legal Info</string>
+    <string name="persons_activity">Lista zmarłych</string>
     <string name="no_demos">No demos</string>
     <string name="play_services_not_installed">Google Play services is not installed on this device.</string>
 
@@ -114,6 +115,7 @@
     <string name="stroke_width">Stroke Width</string>
     <string name="swipe">\u2190 Swipe \u2192</string>
     <string name="switch_image">Switch Image</string>
+    <string name="persons_list">Szukaj osobę</string>
     <string name="tap_instructions">Tap or long press on the map</string>
     <string name="terrain">Terrain</string>
     <string name="tile_coordinate_demo_label">Tile Coordinate Overlay</string>

@@ -42,7 +42,7 @@ public final class FeatureView extends FrameLayout {
      *
      * @param titleId the resource id of the title of the demo
      */
-    public synchronized void setTitleId(int titleId) {
+    public synchronized void setTitleId(String titleId) {
         ((TextView) (findViewById(R.id.title))).setText(titleId);
     }
 
@@ -51,7 +51,7 @@ public final class FeatureView extends FrameLayout {
      *
      * @param descriptionId the resource id of the description of the demo
      */
-    public synchronized void setDescriptionId(int descriptionId) {
+    public synchronized void setDescriptionId(String descriptionId) {
         ((TextView) (findViewById(R.id.description))).setText(descriptionId);
     }
 
