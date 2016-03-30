@@ -16,47 +16,47 @@
 
 package com.costrella.cemetery.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.SeekBar;
+import android.widget.Toast;
 
+import com.example.mapdemo.PermissionUtils;
 import com.example.mapdemo.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.LatLng;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 /**
  * This shows how to add a ground overlay to a map.
  */
 public class MapActivity extends AppCompatActivity
-        implements OnMapReadyCallback {
+        implements GoogleMap.OnMyLocationButtonClickListener, OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
-    private static final int TRANSPARENCY_MAX = 100;
+    private GoogleMap mMap;
 
     private static final LatLng RACLAWICKI = new LatLng(50.075525, 19.952921);
 
-    private static final LatLng NEAR_NEWARK =
-            new LatLng(RACLAWICKI.latitude - 0.001, RACLAWICKI.longitude - 0.025);
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
-    private final List<BitmapDescriptor> mImages = new ArrayList<BitmapDescriptor>();
-
-    private GroundOverlay mGroundOverlay;
+    private Marker sector;
 
     private GroundOverlay mGroundOverlayRotated;
 
-    private SeekBar mTransparencyBar;
-
-    private int mCurrentEntry = 0;
+    private boolean mPermissionDenied = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,19 +71,41 @@ public class MapActivity extends AppCompatActivity
 
     @Override
     public void onMapReady(GoogleMap map) {
-        // Register a listener to respond to clicks on GroundOverlays.
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(RACLAWICKI, 11));
+        mMap = map;
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(RACLAWICKI, 11));
+        mMap.setContentDescription("???");
+        goToSector();
+        enableMyLocation();
+    }
 
-        mImages.clear();
-
-        map.setContentDescription("Google Map with ground overlay.");
-
+    private void goToSector() {
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
-            LatLng latLng = (LatLng) bundle.get("person");
-            if (latLng != null)
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
+            LatLng latLng = (LatLng) bundle.get("personLatLng");
+            String name = (String) bundle.get("personName");
+            String deathDate = (String) bundle.get("personDeathDate");
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+            sector = mMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title(name)
+                    .snippet(deathDate)
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow))
+                    .infoWindowAnchor(0.5f, 0.5f));
+
+
+        }
+    }
+
+    private void enableMyLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission to access the location is missing.
+            PermissionUtils.requestPermission(this, LOCATION_PERMISSION_REQUEST_CODE,
+                    Manifest.permission.ACCESS_FINE_LOCATION, true);
+        } else if (mMap != null) {
+            // Access to the location has been granted to the app.
+            mMap.setMyLocationEnabled(true);
         }
     }
 
@@ -91,6 +113,9 @@ public class MapActivity extends AppCompatActivity
         Intent intent = new Intent(this, PersonsListActivity.class);
         startActivity(intent);
     }
+
+
+    ////////////////////////////////////////OVERIDES
 
     /**
      * Toggles the clickability of the smaller, rotated overlay based on the state of the View that
@@ -101,5 +126,45 @@ public class MapActivity extends AppCompatActivity
         if (mGroundOverlayRotated != null) {
             mGroundOverlayRotated.setClickable(((CheckBox) view).isChecked());
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
+            return;
+        }
+
+        if (PermissionUtils.isPermissionGranted(permissions, grantResults,
+                Manifest.permission.ACCESS_FINE_LOCATION)) {
+            // Enable the my location layer if the permission has been granted.
+            enableMyLocation();
+        } else {
+            // Display the missing permission error dialog when the fragments resume.
+            mPermissionDenied = true;
+        }
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        if (mPermissionDenied) {
+            // Permission was not granted, display error dialog.
+            showMissingPermissionError();
+            mPermissionDenied = false;
+        }
+    }
+
+    private void showMissingPermissionError() {
+        PermissionUtils.PermissionDeniedDialog
+                .newInstance(true).show(getSupportFragmentManager(), "dialog");
+    }
+
+    @Override
+    public boolean onMyLocationButtonClick() {
+        Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
+        // Return false so that we don't consume the event and the default behavior still occurs
+        // (the camera animates to the user's current position).
+        return false;
     }
 }

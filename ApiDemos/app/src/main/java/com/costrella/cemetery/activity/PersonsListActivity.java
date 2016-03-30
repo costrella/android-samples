@@ -73,7 +73,9 @@ public class PersonsListActivity extends AppCompatActivity
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         DemoDetails2 demo = (DemoDetails2) parent.getAdapter().getItem(position);
         Intent intent = new Intent(this, demo.activityClass);
-        intent.putExtra("person", demo.person.getSector().getLatLng());
+        intent.putExtra("personLatLng", demo.person.getSector().getLatLng());
+        intent.putExtra("personName", demo.person.getFullName());
+        intent.putExtra("personDeathDate", demo.person.getDeath());
         startActivity(intent);
     }
 }
